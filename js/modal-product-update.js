@@ -1,20 +1,28 @@
 export default {
-  props: ["tempProduct", "editState", "apiUrl", "apiPath"],
+  props: ["tempProduct", "editState", "apiUrl", "apiPath", "pagination"],
   methods: {
     updateProduct() {
       let url = `${this.apiUrl}/api/${this.apiPath}/admin/product`;
       let httpMethod = "post";
+      // 如果是新增狀態，getProducts() 列表頁要去抓第一頁的資料
+      let currentPage = 1;
 
+      // 如果是編輯狀態
       if (this.editState == "edit") {
         url = `${this.apiUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`;
         httpMethod = "put";
+        // 去抓目前在編輯的產品，是在當前列表的哪一頁
+        currentPage = this.pagination.current_page;
       }
+
+      console.log(currentPage);
 
       axios[httpMethod](url, { data: this.tempProduct })
         .then((res) => {
           alert(res.data.message);
           this.$emit("hide-product-modal");
-          this.$emit("get-product");
+          // 重新渲染產品列表，並去 load 該頁面
+          this.$emit("get-product", currentPage);
         })
         .catch((err) => {
           console.log(err.response.data);
